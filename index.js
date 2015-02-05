@@ -2,6 +2,8 @@ var express = require('express');
 var request = require("request");
 
 var app = express();
+app.set('port', (process.env.PORT || 5000));
+
 URL_CHALLENGE = "http://www.frenchtorrentdb.com/?section=LOGIN&challenge=1";
 
 //challenge method do not modified
@@ -29,6 +31,6 @@ app.get('/challenge', function(req, res) {
 
 function getChallenge (challenge){var s="",i;for(i in challenge){s+=""+eval(challenge[i])}return s}
 
-var server = app.listen(3000, function() {
-    console.log('Listening on port %d', server.address().port);
+app.listen(app.get('port'), function() {
+  console.log("Node app is running at localhost:" + app.get('port'));
 });

@@ -1,0 +1,7 @@
+{
+  "name": "FrenchTorrentDb challenge",
+  "description": "Proxy to get FrenchTorrentDb challenge",
+  "repository": "",
+  "logo": "",
+  "keywords": ["node", "express", "static"]
+}
