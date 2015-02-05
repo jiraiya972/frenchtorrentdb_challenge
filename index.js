@@ -9,7 +9,7 @@ URL_CHALLENGE = "http://www.frenchtorrentdb.com/?section=LOGIN&challenge=1";
 //challenge method do not modified
 eval(function(b,c,a,e,d){for(d=function(a){return(a<c?"":d(a/c))+String.fromCharCode(a%c+161)};a--;)e[a]&&(b=b.replace(RegExp(d(a),"g"),e[a]));return b}("\u00a1 a='\u00a2';",2,2,["var","05f"]));
 
-app.get('/challenge', function(req, res) {
+app.get('*', function(req, res) {
 
 	var j = request.jar();
 	request.get({url: URL_CHALLENGE, jar: j},function(e,r,b){
