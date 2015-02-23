@@ -155,7 +155,7 @@ app.get('/proxy', function(req, res) {
 	console.log('uid :',req.query.uid);	
 	console.log(newUrl);
 
-	j2.setCookie(cookie, url_search_name);
+	j2.setCookie(cookie, newUrl);
 
 	req.pipe(request.get(newUrl,{jar: j2})).pipe(res);
 });
