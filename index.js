@@ -1,6 +1,7 @@
 var express = require('express');
 var request = require("request");
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 var app = express();
 
@@ -9,9 +10,14 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 	extended: true
 }));
 
-app.set('port', (process.env.PORT || 5000));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}))
 
-var j = request.jar();
+app.set('port', (process.env.PORT || 5000));
 
 URL_CHALLENGE = "http://www.frenchtorrentdb.com/?section=LOGIN&challenge=1";
 URL_LOGIN_AJAX = "http://www.frenchtorrentdb.com/?section=LOGIN&ajax=1";
@@ -38,7 +44,7 @@ app.post('/evalchallenge', function(req, res) {
 });
 
 app.get('/challenge', function(req, res) {
-
+	var j = request.jar();
 	request.get({url: URL_CHALLENGE, jar: j},function(e,r,b){
 		//error
 		if(e) throw e;
@@ -66,7 +72,7 @@ app.get('/challenge', function(req, res) {
 
 app.all('/login', function(req, res) {
 
-	j = request.jar();
+	var j = request.jar();
 	var username = req.query.username;
 	var password = req.query.password;
 
@@ -91,6 +97,9 @@ app.all('/login', function(req, res) {
 		console.log('challenge :',challenge);
 		console.log('hash :',hash);
 
+		var cookieFullS = j.getCookieString(URL_CHALLENGE);
+		req.session.myFtdbSession = cookieFullS;
+
 		request.post(
 			URL_LOGIN_AJAX,
 			{
@@ -98,19 +107,42 @@ app.all('/login', function(req, res) {
 					password: password,
 					secure_login: challenge,
 					hash: hash },
-				jar: j
+				jar : j
 			}).pipe(res);
 	});
 });
 
 app.get('/search', function(req, res) {
+	if(!req.session.myFtdbSession){
+		res.send({success:false,message: 'authentification required'});
+		//throw new Error('authentification required');
+		return false;
+	}
+
+	var j2 = request.jar();
+	var cookieFullS = req.session.myFtdbSession;
+	
+	var cookie = request.cookie(cookieFullS);
 
 	var url_search_name = URL_SEARCH.replace('{:search}',req.query.q);
 	console.log('search : ',req.query.q);
-	request.get({url: url_search_name, jar: j}).pipe(res);
+
+	j2.setCookie(cookie, url_search_name);
+	console.log(j2);
+
+	request.get({url: url_search_name, jar: j2}).pipe(res);
 });
 
 app.get('/proxy', function(req, res) {
+	if(!req.session.myFtdbSession){
+		res.send({success:false,message: 'authentification required'})
+		return false;
+	}
+
+	var j2 = request.jar();
+	var cookieFullS = req.session.myFtdbSession;
+	
+	var cookie = request.cookie(cookieFullS);
 	
 	var newUrl = URL_DL_TORRENT.replace('{:id}',req.query.id).replace('{:hash}',req.query.hash).replace('{:uid}',req.query.uid);
 
@@ -118,7 +150,10 @@ app.get('/proxy', function(req, res) {
 	console.log('hash :',req.query.hash);
 	console.log('uid :',req.query.uid);	
 	console.log(newUrl);
-	req.pipe(request.get(newUrl,{jar: j})).pipe(res);
+
+	j2.setCookie(cookie, url_search_name);
+
+	req.pipe(request.get(newUrl,{jar: j2})).pipe(res);
 });
 
 
