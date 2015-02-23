@@ -108,19 +108,23 @@ app.all('/login', function(req, res) {
 					secure_login: challenge,
 					hash: hash },
 				jar : j
-			}).pipe(res);
+			}, function(e,r,b){
+				var data = JSON.parse(b);
+				data.cid = cookieFullS;
+				res.send(data);
+			});
 	});
 });
 
 app.get('/search', function(req, res) {
-	if(!req.session.myFtdbSession){
+	if(!req.session.myFtdbSession && !req.query.cid){
 		res.send({success:false,message: 'authentification required'});
 		//throw new Error('authentification required');
 		return false;
 	}
-
+	console.log('req : ',req.session.myFtdbSession,' cid :',req.query.cid);
 	var j2 = request.jar();
-	var cookieFullS = req.session.myFtdbSession;
+	var cookieFullS = req.session.myFtdbSession || req.query.cid;
 	
 	var cookie = request.cookie(cookieFullS);
 
@@ -134,13 +138,13 @@ app.get('/search', function(req, res) {
 });
 
 app.get('/proxy', function(req, res) {
-	if(!req.session.myFtdbSession){
+	if(!req.session.myFtdbSession && !req.query.cid){
 		res.send({success:false,message: 'authentification required'})
 		return false;
 	}
 
 	var j2 = request.jar();
-	var cookieFullS = req.session.myFtdbSession;
+	var cookieFullS = req.session.myFtdbSession || req.query.cid;
 	
 	var cookie = request.cookie(cookieFullS);
 	
