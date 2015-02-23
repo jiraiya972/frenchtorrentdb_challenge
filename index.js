@@ -21,6 +21,11 @@ URL_DL_TORRENT = "http://www.frenchtorrentdb.com/?section=DOWNLOAD&id={:id}&hash
 //challenge method do not modified
 eval(function(b,c,a,e,d){for(d=function(a){return(a<c?"":d(a/c))+String.fromCharCode(a%c+161)};a--;)e[a]&&(b=b.replace(RegExp(d(a),"g"),e[a]));return b}("\u00a1 a='\u00a2';",2,2,["var","05f"]));
 
+app.get('/log', function(req,res){
+	console.log(req.query.msg);
+	res.send('ok');
+});
+
 app.post('/evalchallenge', function(req, res) {
 	//console.log(req.body);
 
